@@ -1,0 +1,94 @@
+﻿<Page x:Class="AdminPanelElectroShop.Views.UsersManagementPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:AdminPanelElectroShop.Views"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="UsersManagementPage">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="👥 Управление пользователями" 
+                   FontSize="24" FontWeight="Bold"
+                   Margin="0,0,0,20"/>
+
+        <!-- Панель поиска -->
+        <Grid Grid.Row="1" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="SearchBox" Margin="0,0,10,0" Padding="10"
+                     TextChanged="SearchBox_TextChanged"/>
+            <Button Grid.Column="1" Content="+ Пользователь" Width="120" Margin="0,0,10,0" Click="AddUser_Click"/>
+            <Button Grid.Column="2" Content="Поиск" Width="80" Click="SearchButton_Click"/>
+        </Grid>
+
+        <Border x:Name="EditPanel" Grid.Row="2" Visibility="Collapsed" Background="#F8F9FA"
+                BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,15">
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="FirstNameBox" Width="130" Margin="0,0,8,0" Padding="8"/>
+                <TextBox x:Name="LastNameBox" Width="130" Margin="0,0,8,0" Padding="8"/>
+                <TextBox x:Name="EmailBox" Width="180" Margin="0,0,8,0" Padding="8"/>
+                <TextBox x:Name="PhoneBox" Width="120" Margin="0,0,8,0" Padding="8"/>
+                <TextBox x:Name="PasswordBox" Width="130" Margin="0,0,8,0" Padding="8" ToolTip="Пароль (для нового пользователя)"/>
+                <ComboBox x:Name="RoleBox" Width="100" Margin="0,0,8,0">
+                    <ComboBoxItem Content="customer"/>
+                    <ComboBoxItem Content="seller"/>
+                    <ComboBoxItem Content="admin"/>
+                </ComboBox>
+                <Button Content="Сохранить" Width="90" Margin="0,0,8,0" Click="SaveUser_Click" Background="#28A745" Foreground="White"/>
+                <Button Content="Отмена" Width="90" Click="CancelEdit_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Таблица пользователей -->
+        <DataGrid x:Name="UsersGrid" Grid.Row="3" 
+                  AutoGenerateColumns="False" 
+                  CanUserAddRows="False" IsReadOnly="True"
+                  SelectionMode="Single" SelectionUnit="FullRow">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                <DataGridTextColumn Header="Имя" Binding="{Binding FullName}" Width="150"/>
+                <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
+                <DataGridTextColumn Header="Телефон" Binding="{Binding Phone}" Width="120"/>
+                <DataGridTextColumn Header="Роль" Binding="{Binding Role}" Width="100"/>
+                <DataGridTemplateColumn Header="Статус" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Действия" Width="280">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="✏️" Width="35" Margin="0,0,5,0" 
+                                        Click="EditUser_Click" Background="#1F6FEB" Foreground="White"/>
+                                <Button Content="🔒" Width="35" Margin="0,0,5,0" 
+                                        Click="ToggleBlock_Click" Background="#FFC107" Foreground="White"/>
+                                <Button Content="👑" Width="35" Margin="0,0,5,0" 
+                                        Click="MakeSeller_Click" Background="#28A745" Foreground="White"
+                                        ToolTip="Назначить продавцом"/>
+                                <Button Content="⭐" Width="35" Margin="0,0,5,0" 
+                                        Click="RemoveSeller_Click" Background="#DC3545" Foreground="White"
+                                        ToolTip="Снять роль продавца"/>
+                                <Button Content="🗑️" Width="35" 
+                                        Click="DeleteUser_Click" Background="#DC3545" Foreground="White"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

@@ -1,0 +1,75 @@
+﻿<Window x:Class="AdminPanelElectroShop.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AdminPanelElectroShop"
+        mc:Ignorable="d"
+        Title="LoginWindow" Height="450" Width="800">
+    <Grid Background="#F4F7FB">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="320">
+            <TextBlock Text="Панель управления" 
+                       FontSize="16"
+                       Foreground="#60708F"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,30"/>
+
+            <!-- Поле Логин -->
+            <TextBox x:Name="LoginTextBox" 
+                     Margin="0,0,0,15"
+                     Padding="12"
+                     FontSize="14"
+                     Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}">
+                <TextBox.Style>
+                    <Style TargetType="TextBox">
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
+
+            <!-- Поле Пароль -->
+            <PasswordBox x:Name="PasswordBox" 
+                         Margin="0,0,0,20"
+                         Padding="12"
+                         FontSize="14">
+                <PasswordBox.Style>
+                    <Style TargetType="PasswordBox">
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                    </Style>
+                </PasswordBox.Style>
+            </PasswordBox>
+
+            <!-- Сообщение об ошибке -->
+            <TextBlock x:Name="ErrorText" 
+                       Text="{Binding ErrorMessage}"
+                       Foreground="#DC3545"
+                       FontSize="12"
+                       Margin="0,0,0,10"
+                       Visibility="Collapsed"/>
+
+            <!-- Кнопка входа -->
+            <Button x:Name="LoginButton" 
+                    Content="ВОЙТИ"
+                    Background="#1F6FEB"
+                    Foreground="White"
+                    FontSize="14" FontWeight="Bold"
+                    Height="45"
+                    Cursor="Hand"
+                    Click="LoginButton_Click"/>
+
+            <!-- Статус загрузки -->
+            <TextBlock x:Name="LoadingText" 
+                       Text="Подключение..."
+                       Foreground="#1F6FEB"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,0"
+                       Visibility="Collapsed"/>
+
+        </StackPanel>
+    </Grid>
+</Window>

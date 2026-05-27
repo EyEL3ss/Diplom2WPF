@@ -1,0 +1,167 @@
+<Page x:Class="AdminPanelElectroShop.Views.PromoCodesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d"
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="PromoCodesPage">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="🏷️ Управление скидками и акциями"
+                   FontSize="24" FontWeight="Bold"
+                   Margin="0,0,0,20"/>
+
+        <TabControl Grid.Row="1">
+            <TabItem Header="Промокоды">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Button x:Name="AddButton" Grid.Row="0"
+                            Content="+ Добавить промокод"
+                            Width="170" Height="35" Margin="0,0,0,15"
+                            Click="AddPromo_Click" Background="#1F6FEB" Foreground="White"
+                            HorizontalAlignment="Left"/>
+
+                    <Border x:Name="AddEditPanel" Grid.Row="1"
+                            Visibility="Collapsed" Background="#F8F9FA"
+                            BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8"
+                            Padding="15" Margin="0,0,0,15">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                                       Text="Новый промокод" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Код промокода *" Margin="0,0,10,5"/>
+                            <TextBox x:Name="CodeBox" Grid.Row="1" Grid.Column="1" Margin="0,0,0,5" Padding="8"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Описание" Margin="0,0,10,5"/>
+                            <TextBox x:Name="DescriptionBox" Grid.Row="2" Grid.Column="1" Margin="0,0,0,5" Padding="8"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Тип скидки" Margin="0,0,10,5"/>
+                            <ComboBox x:Name="DiscountTypeCombo" Grid.Row="3" Grid.Column="1" Margin="0,0,0,5" Padding="8">
+                                <ComboBoxItem Content="Процент"/>
+                                <ComboBoxItem Content="Фиксированная"/>
+                            </ComboBox>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Значение скидки *" Margin="0,0,10,5"/>
+                            <TextBox x:Name="DiscountValueBox" Grid.Row="4" Grid.Column="1" Margin="0,0,0,5" Padding="8"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Мин. сумма заказа" Margin="0,0,10,5"/>
+                            <TextBox x:Name="MinOrderBox" Grid.Row="5" Grid.Column="1" Margin="0,0,0,5" Padding="8"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Период действия" Margin="0,0,10,5"/>
+                            <StackPanel Grid.Row="6" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,5">
+                                <DatePicker x:Name="StartDatePicker" Width="120" Margin="0,0,5,0"/>
+                                <DatePicker x:Name="EndDatePicker" Width="120"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="7" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                <CheckBox x:Name="IsActiveCheck" Content="Активен" IsChecked="True" Margin="0,0,15,0"/>
+                                <Button Content="Отмена" Width="80" Margin="0,0,10,0" Click="CancelAdd_Click"/>
+                                <Button x:Name="SavePromoButton" Content="Сохранить" Width="80"
+                                        Background="#1F6FEB" Foreground="White" Click="SavePromo_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <DataGrid x:Name="PromoCodesGrid" Grid.Row="2"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False" IsReadOnly="True"
+                              SelectionMode="Single" SelectionUnit="FullRow">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Код" Binding="{Binding Code}" Width="100"/>
+                            <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="200"/>
+                            <DataGridTextColumn Header="Скидка" Binding="{Binding DiscountValue}" Width="80"/>
+                            <DataGridTextColumn Header="Период" Binding="{Binding StartDate, StringFormat='dd.MM.yyyy'}" Width="100"/>
+                            <DataGridTemplateColumn Header="Действия" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="🔄" Width="35" Margin="0,0,5,0"
+                                                    Click="ToggleActive_Click" Background="#FFC107" Foreground="White"/>
+                                            <Button Content="🗑️" Width="35"
+                                                    Click="DeletePromo_Click" Background="#DC3545" Foreground="White"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Скидки на товар">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="DiscountProductCombo" Grid.Column="0" Margin="0,0,8,0" DisplayMemberPath="Name" SelectedValuePath="Id"/>
+                            <ComboBox x:Name="ProductDiscountTypeCombo" Grid.Column="1" Margin="0,0,8,0">
+                                <ComboBoxItem Content="Процент"/>
+                                <ComboBoxItem Content="Фиксированная"/>
+                            </ComboBox>
+                            <TextBox x:Name="ProductDiscountValueBox" Grid.Column="2" Margin="0,0,8,0" Padding="6"/>
+                            <DatePicker x:Name="ProductDiscountStartDatePicker" Grid.Column="3" Margin="0,0,8,0"/>
+                            <DatePicker x:Name="ProductDiscountEndDatePicker" Grid.Column="4" Margin="0,0,8,0"/>
+                            <Button Grid.Column="5" Content="Добавить" Width="90" Click="SaveProductDiscount_Click" Background="#1F6FEB" Foreground="White"/>
+                        </Grid>
+                    </Border>
+
+                    <DataGrid x:Name="ProductDiscountsGrid" Grid.Row="1"
+                              AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Товар" Binding="{Binding Product.Name}" Width="240"/>
+                            <DataGridTextColumn Header="Тип" Binding="{Binding DiscountType}" Width="100"/>
+                            <DataGridTextColumn Header="Скидка" Binding="{Binding DiscountValue}" Width="100"/>
+                            <DataGridTextColumn Header="Начало" Binding="{Binding StartDate, StringFormat='dd.MM.yyyy'}" Width="110"/>
+                            <DataGridTextColumn Header="Конец" Binding="{Binding EndDate, StringFormat='dd.MM.yyyy'}" Width="110"/>
+                            <DataGridCheckBoxColumn Header="Активна" Binding="{Binding IsActive}" Width="80"/>
+                            <DataGridTemplateColumn Header="Действия" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="🔄" Width="35" Margin="0,0,5,0"
+                                                    Click="ToggleProductDiscount_Click" Background="#FFC107" Foreground="White"/>
+                                            <Button Content="🗑️" Width="35"
+                                                    Click="DeleteProductDiscount_Click" Background="#DC3545" Foreground="White"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Page>
