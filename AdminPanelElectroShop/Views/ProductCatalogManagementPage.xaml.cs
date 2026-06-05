@@ -11,18 +11,40 @@ namespace AdminPanelElectroShop.Views
     {
         private readonly DbConnection _context;
         private List<Product> _products = new();
+        private List<User> _sellers = new();
         private Product? _currentProduct;
 
         public ProductCatalogManagementPage()
         {
             InitializeComponent();
             _context = App.ServiceProvider.GetRequiredService<DbConnection>();
-            Loaded += async (_, _) => await LoadProductsAsync();
+            Loaded += async (_, _) =>
+            {
+                await _context.EnsureAdminPanelSchemaAsync();
+                await LoadSellersAsync();
+                await LoadProductsAsync();
+            };
+        }
+
+        private async Task LoadSellersAsync()
+        {
+            _sellers = await _context.Users
+                .Where(u => u.Role == "seller" && u.IsActive == true)
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .ToListAsync();
+
+            SellerCombo.ItemsSource = _sellers;
         }
 
         private async Task LoadProductsAsync()
         {
-            _products = await _context.Products.OrderByDescending(p => p.Id).ToListAsync();
+            _products = await _context.Products
+                .Include(p => p.Discounts)
+                .Include(p => p.Seller)
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
+
             ProductsGrid.ItemsSource = _products;
         }
 
@@ -41,7 +63,9 @@ namespace AdminPanelElectroShop.Views
             }
 
             ProductsGrid.ItemsSource = _products
-                .Where(p => p.Name.ToLower().Contains(query) || (p.Brand != null && p.Brand.ToLower().Contains(query)))
+                .Where(p => p.Name.ToLowerInvariant().Contains(query)
+                            || (p.Brand != null && p.Brand.ToLowerInvariant().Contains(query))
+                            || p.SellerName.ToLowerInvariant().Contains(query))
                 .ToList();
         }
 
@@ -56,6 +80,9 @@ namespace AdminPanelElectroShop.Views
             NameBox.Text = product.Name;
             PriceBox.Text = product.Price.ToString();
             StockBox.Text = product.StockQuantity?.ToString() ?? "0";
+            SellerCombo.SelectedValue = product.SellerId;
+            ReceivedDatePicker.SelectedDate = product.ReceivedAt ?? DateTime.Today;
+            NomenclatureBox.Text = product.Nomenclature ?? string.Empty;
             StatusCombo.SelectedIndex = product.Status switch
             {
                 "approved" => 1,
@@ -82,6 +109,9 @@ namespace AdminPanelElectroShop.Views
             _currentProduct.Price = price;
             _currentProduct.StockQuantity = stock;
             _currentProduct.InStock = stock > 0;
+            _currentProduct.SellerId = SellerCombo.SelectedValue is int sellerId ? sellerId : null;
+            _currentProduct.ReceivedAt = ReceivedDatePicker.SelectedDate;
+            _currentProduct.Nomenclature = string.IsNullOrWhiteSpace(NomenclatureBox.Text) ? null : NomenclatureBox.Text.Trim();
             _currentProduct.Status = (StatusCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "pending";
             _currentProduct.UpdatedAt = DateTime.UtcNow;
 

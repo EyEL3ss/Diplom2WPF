@@ -49,11 +49,8 @@ namespace AdminPanelElectroShop.Views
         private void Stock_Click(object sender, RoutedEventArgs e)
             => ContentFrame.Navigate(new StockManagementPage());
 
-        private void Orders_Click(object sender, RoutedEventArgs e)
+        private void Orders_Click(object sender, RoutedEventArgs e) 
             => ContentFrame.Navigate(new OrdersManagementPage());
-
-        private void DatabaseConsole_Click(object sender, RoutedEventArgs e)
-            => ContentFrame.Navigate(new DatabaseConsolePage());
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {

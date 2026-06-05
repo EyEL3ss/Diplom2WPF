@@ -20,6 +20,7 @@ namespace AdminPanelElectroShop.Views
             _context = App.ServiceProvider.GetRequiredService<DbConnection>();
             Loaded += async (_, _) =>
             {
+                await _context.EnsureAdminPanelSchemaAsync();
                 await EnsureProductDiscountsTableAsync();
                 await LoadPromoCodesAsync();
                 await LoadProductsAsync();
@@ -38,6 +39,7 @@ namespace AdminPanelElectroShop.Views
         private async Task LoadProductsAsync()
         {
             var products = await _context.Products
+                .Include(p => p.Discounts)
                 .OrderBy(p => p.Name)
                 .ToListAsync();
 
@@ -155,18 +157,34 @@ namespace AdminPanelElectroShop.Views
                 return;
             }
 
+            var discountType = ((ComboBoxItem)ProductDiscountTypeCombo.SelectedItem)?.Content?.ToString() == "Процент" ? "percentage" : "fixed";
+            if (discountType == "percentage" && discountValue > 100)
+            {
+                MessageBox.Show("Процентная скидка не может быть больше 100%", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var startDate = ProductDiscountStartDatePicker.SelectedDate ?? DateTime.Today;
+            var endDate = ProductDiscountEndDatePicker.SelectedDate ?? DateTime.Today.AddMonths(1);
+            if (endDate < startDate)
+            {
+                MessageBox.Show("Дата окончания скидки не может быть раньше даты начала", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var discount = new ProductDiscount
             {
                 ProductId = (int)DiscountProductCombo.SelectedValue,
-                DiscountType = ((ComboBoxItem)ProductDiscountTypeCombo.SelectedItem)?.Content?.ToString() == "Процент" ? "percentage" : "fixed",
+                DiscountType = discountType,
                 DiscountValue = discountValue,
-                StartDate = ProductDiscountStartDatePicker.SelectedDate ?? DateTime.Today,
-                EndDate = ProductDiscountEndDatePicker.SelectedDate ?? DateTime.Today.AddMonths(1),
+                StartDate = startDate,
+                EndDate = endDate,
                 IsActive = true
             };
 
             await _context.ProductDiscounts.AddAsync(discount);
             await _context.SaveChangesAsync();
+            await LoadProductsAsync();
             await LoadProductDiscountsAsync();
 
             ProductDiscountValueBox.Text = string.Empty;
@@ -182,6 +200,7 @@ namespace AdminPanelElectroShop.Views
             discount.IsActive = !discount.IsActive;
             discount.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+            await LoadProductsAsync();
             await LoadProductDiscountsAsync();
         }
 
@@ -194,6 +213,7 @@ namespace AdminPanelElectroShop.Views
 
             _context.ProductDiscounts.Remove(discount);
             await _context.SaveChangesAsync();
+            await LoadProductsAsync();
             await LoadProductDiscountsAsync();
         }
 

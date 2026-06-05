@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="450" d:DesignWidth="900"
       Title="ProductCatalogManagementPage">
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -14,7 +14,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="🛒 Товары: редактирование" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
+        <TextBlock Text="Товары: редактирование" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
 
         <Grid Grid.Row="1" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
@@ -27,37 +27,77 @@
 
         <Border x:Name="EditPanel" Grid.Row="2" Visibility="Collapsed" Background="#F8F9FA"
                 BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
-            <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="NameBox" Width="220" Margin="0,0,10,0" Padding="8"/>
-                <TextBox x:Name="PriceBox" Width="120" Margin="0,0,10,0" Padding="8"/>
-                <TextBox x:Name="StockBox" Width="120" Margin="0,0,10,0" Padding="8"/>
-                <ComboBox x:Name="StatusCombo" Width="120" Margin="0,0,10,0">
+            <WrapPanel>
+                <TextBox x:Name="NameBox" Width="220" Margin="0,0,10,8" Padding="8" ToolTip="Название"/>
+                <TextBox x:Name="PriceBox" Width="120" Margin="0,0,10,8" Padding="8" ToolTip="Цена"/>
+                <TextBox x:Name="StockBox" Width="120" Margin="0,0,10,8" Padding="8" ToolTip="Остаток"/>
+                <ComboBox x:Name="SellerCombo" Width="170" Margin="0,0,10,8"
+                          DisplayMemberPath="FullName" SelectedValuePath="Id" ToolTip="Продавец"/>
+                <DatePicker x:Name="ReceivedDatePicker" Width="140" Margin="0,0,10,8" ToolTip="Дата поступления"/>
+                <TextBox x:Name="NomenclatureBox" Width="220" Margin="0,0,10,8" Padding="8" ToolTip="Номенклатура склада"/>
+                <ComboBox x:Name="StatusCombo" Width="120" Margin="0,0,10,8">
                     <ComboBoxItem Content="pending"/>
                     <ComboBoxItem Content="approved"/>
                     <ComboBoxItem Content="rejected"/>
                 </ComboBox>
-                <Button Content="Сохранить" Width="90" Margin="0,0,10,0" Click="Save_Click"
+                <Button Content="Сохранить" Width="90" Margin="0,0,10,8" Click="Save_Click"
                         Background="#28A745" Foreground="White"/>
-                <Button Content="Отмена" Width="90" Click="Cancel_Click"/>
-            </StackPanel>
+                <Button Content="Отмена" Width="90" Margin="0,0,10,8" Click="Cancel_Click"/>
+            </WrapPanel>
         </Border>
 
         <DataGrid x:Name="ProductsGrid" Grid.Row="3" AutoGenerateColumns="False"
                   CanUserAddRows="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="250"/>
-                <DataGridTextColumn Header="Бренд" Binding="{Binding Brand}" Width="130"/>
-                <DataGridTextColumn Header="Цена" Binding="{Binding Price}" Width="100"/>
-                <DataGridTextColumn Header="Остаток" Binding="{Binding StockQuantity}" Width="90"/>
+                <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="220"/>
+                <DataGridTextColumn Header="Бренд" Binding="{Binding Brand}" Width="120"/>
+                <DataGridTemplateColumn Header="Цена" Width="140">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding PriceText}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasActiveDiscount}" Value="True">
+                                                    <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                                    <Setter Property="Foreground" Value="#888888"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasActiveDiscount}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <TextBlock Text="{Binding FinalPriceText}" FontWeight="Bold" Foreground="#28A745"/>
+                                    <TextBlock Text="{Binding DiscountText}" Margin="8,0,0,0" Foreground="#DC3545"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Остаток" Binding="{Binding StockQuantity}" Width="80"/>
+                <DataGridTextColumn Header="Продавец" Binding="{Binding SellerName}" Width="150"/>
+                <DataGridTextColumn Header="Дата поступления" Binding="{Binding ReceivedAtText}" Width="120"/>
+                <DataGridTextColumn Header="Номенклатура" Binding="{Binding Nomenclature}" Width="180"/>
                 <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="90"/>
-                <DataGridTemplateColumn Header="Действия" Width="160">
+                <DataGridTemplateColumn Header="Действия" Width="110">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="✏️" Width="35" Margin="0,0,5,0"
+                                <Button Content="✏" Width="35" Margin="0,0,5,0"
                                         Click="Edit_Click" Background="#1F6FEB" Foreground="White"/>
-                                <Button Content="🗑️" Width="35"
+                                <Button Content="🗑" Width="35"
                                         Click="Delete_Click" Background="#DC3545" Foreground="White"/>
                             </StackPanel>
                         </DataTemplate>

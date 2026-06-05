@@ -23,7 +23,7 @@ namespace AdminPanelElectroShop.Views
     public partial class ProductsModerationPage : Page
     {
         private readonly DbConnection _context;
-        private List<Product> _pendingProducts;
+        private List<Product> _pendingProducts = new();
 
         public ProductsModerationPage()
         {
@@ -34,6 +34,8 @@ namespace AdminPanelElectroShop.Views
 
         private async Task LoadProductsAsync()
         {
+            await _context.EnsureAdminPanelSchemaAsync();
+
             _pendingProducts = await _context.Products
                 .Where(p => p.Status == "pending")
                 .Include(p => p.Category)

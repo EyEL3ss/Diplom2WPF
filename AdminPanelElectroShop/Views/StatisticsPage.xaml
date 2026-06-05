@@ -54,10 +54,10 @@
                 </Border>
             </WrapPanel>
 
-            <!-- Таблица топ товаров -->
+            <!-- Таблица хитов продаж -->
             <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="15">
                 <StackPanel>
-                    <TextBlock Text="🏆 Топ-10 товаров" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <TextBlock Text="🏆 Хит продаж" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
                     <DataGrid x:Name="TopProductsGrid" AutoGenerateColumns="False" 
                               CanUserAddRows="False" IsReadOnly="True"
                               RowHeight="40">
@@ -65,7 +65,7 @@
                             <DataGridTextColumn Header="#" Binding="{Binding Rank}" Width="50"/>
                             <DataGridTextColumn Header="Товар" Binding="{Binding ProductName}" Width="300"/>
                             <DataGridTextColumn Header="Продано" Binding="{Binding TotalSold}" Width="100"/>
-
+                            <DataGridTextColumn Header="Выручка" Binding="{Binding Revenue, StringFormat={}{0:N0} ₽}" Width="120"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>

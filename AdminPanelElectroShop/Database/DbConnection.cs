@@ -154,6 +154,10 @@ namespace AdminPanelElectroShop.Database
                 .HasDatabaseName("idx_product_status");
 
             modelBuilder.Entity<Product>()
+                .HasIndex(p => p.SellerId)
+                .HasDatabaseName("idx_product_seller");
+
+            modelBuilder.Entity<Product>()
                 .HasIndex(p => p.IsNew)
                 .HasDatabaseName("idx_product_new");
 
@@ -229,6 +233,10 @@ namespace AdminPanelElectroShop.Database
                 .HasDatabaseName("idx_order_status");
 
             modelBuilder.Entity<Classes.Order>()
+                .HasIndex(o => o.ResponsibleSellerId)
+                .HasDatabaseName("idx_order_responsible_seller");
+
+            modelBuilder.Entity<Classes.Order>()
                 .HasIndex(o => o.CreatedAt)
                 .HasDatabaseName("idx_order_date");
 
@@ -287,6 +295,12 @@ namespace AdminPanelElectroShop.Database
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Seller)
+                .WithMany(u => u.SellerProducts)
+                .HasForeignKey(p => p.SellerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<ProductImage>()
                 .HasOne(pi => pi.Product)
                 .WithMany(p => p.Images)
@@ -341,6 +355,12 @@ namespace AdminPanelElectroShop.Database
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Classes.Order>()
+                .HasOne(o => o.ResponsibleSeller)
+                .WithMany(u => u.ResponsibleOrders)
+                .HasForeignKey(o => o.ResponsibleSellerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Order)
                 .WithMany(o => o.Items)
@@ -384,6 +404,30 @@ namespace AdminPanelElectroShop.Database
                 .OnDelete(DeleteBehavior.Cascade);
 
             ApplySnakeCaseColumnNames(modelBuilder);
+        }
+
+        public async Task EnsureAdminPanelSchemaAsync()
+        {
+            await AddColumnIfMissingAsync("Products", "seller_id", "INT NULL");
+            await AddColumnIfMissingAsync("Products", "received_at", "DATETIME NULL");
+            await AddColumnIfMissingAsync("Products", "nomenclature", "TEXT NULL");
+            await AddColumnIfMissingAsync("Orders", "responsible_seller_id", "INT NULL");
+        }
+
+        private async Task AddColumnIfMissingAsync(string tableName, string columnName, string definition)
+        {
+            var exists = await Database
+                .SqlQueryRaw<int>(
+                    "SELECT COUNT(*) AS `Value` FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = {0} AND COLUMN_NAME = {1}",
+                    tableName,
+                    columnName)
+                .FirstAsync();
+
+            if (exists == 0)
+            {
+                var addColumnSql = $"ALTER TABLE `{tableName}` ADD COLUMN `{columnName}` {definition}";
+                await Database.ExecuteSqlRawAsync(addColumnSql);
+            }
         }
 
         private static void ApplySnakeCaseColumnNames(ModelBuilder modelBuilder)

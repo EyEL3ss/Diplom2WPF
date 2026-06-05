@@ -27,13 +27,14 @@ namespace AdminPanelElectroShop.Views
         private readonly AuthService _authService;
 
         // Событие, которое вызывается после успешного добавления товара
-        public event EventHandler ProductAdded;
+        public event EventHandler? ProductAdded;
 
         public AddProductPage()
         {
             InitializeComponent();
             _context = App.ServiceProvider.GetRequiredService<DbConnection>();
             _authService = App.ServiceProvider.GetRequiredService<AuthService>();
+            ReceivedDatePicker.SelectedDate = DateTime.Today;
 
             // Загружаем категории при загрузке страницы
             Loaded += async (s, e) => await LoadCategoriesAsync();
@@ -46,8 +47,10 @@ namespace AdminPanelElectroShop.Views
         {
             try
             {
+                await _context.EnsureAdminPanelSchemaAsync();
+
                 var categories = await _context.Categories
-                    .Where(c => (bool)c.IsActive)
+                    .Where(c => c.IsActive == true)
                     .OrderBy(c => c.Name)
                     .ToListAsync();
 
@@ -172,6 +175,9 @@ namespace AdminPanelElectroShop.Views
                     ShortDescription = string.IsNullOrWhiteSpace(ShortDescBox.Text) ? null : ShortDescBox.Text.Trim(),
                     Description = string.IsNullOrWhiteSpace(FullDescBox.Text) ? null : FullDescBox.Text.Trim(),
                     MainImageUrl = string.IsNullOrWhiteSpace(ImageUrlBox.Text) ? null : ImageUrlBox.Text.Trim(),
+                    SellerId = _authService.IsSeller ? _authService.CurrentUser.Id : null,
+                    ReceivedAt = ReceivedDatePicker.SelectedDate ?? DateTime.Today,
+                    Nomenclature = string.IsNullOrWhiteSpace(NomenclatureBox.Text) ? null : NomenclatureBox.Text.Trim(),
                     Status = "pending",                           // На модерацию
                     InStock = int.Parse(StockBox.Text) > 0,      // В наличии, если остаток > 0
                     CreatedAt = DateTime.UtcNow,
@@ -229,6 +235,8 @@ namespace AdminPanelElectroShop.Views
             FullDescBox.Text = "";
             ImageUrlBox.Text = "";
             SpecsBox.Text = "";
+            NomenclatureBox.Text = "";
+            ReceivedDatePicker.SelectedDate = DateTime.Today;
             CategoryCombo.SelectedIndex = -1;
         }
 

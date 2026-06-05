@@ -2,9 +2,6 @@ using AdminPanelElectroShop.Classes;
 using AdminPanelElectroShop.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -15,6 +12,7 @@ namespace AdminPanelElectroShop.Views
         private readonly DbConnection _context;
         private List<Order> _orders = new();
         private List<OrderItem> _orderItems = new();
+        private List<User> _sellers = new();
         private Order? _currentOrder;
         private OrderItem? _currentOrderItem;
         private int? _selectedOrderId;
@@ -23,30 +21,68 @@ namespace AdminPanelElectroShop.Views
         {
             InitializeComponent();
             _context = App.ServiceProvider.GetRequiredService<DbConnection>();
-            Loaded += async (_, _) => await LoadOrdersAsync();
+            Loaded += async (_, _) =>
+            {
+                await _context.EnsureAdminPanelSchemaAsync();
+                await LoadSellersAsync();
+                await LoadOrdersAsync();
+            };
+        }
+
+        private async Task LoadSellersAsync()
+        {
+            _sellers = await _context.Users
+                .Where(u => u.Role == "seller" && u.IsActive == true)
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .ToListAsync();
+
+            ResponsibleSellerCombo.ItemsSource = _sellers;
         }
 
         private async Task LoadOrdersAsync()
         {
             _orders = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.ResponsibleSeller)
+                .Include(o => o.Items)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
+
             OrdersGrid.ItemsSource = _orders;
         }
 
         private async Task LoadOrderItemsAsync(int orderId)
         {
             _orderItems = await _context.OrderItems
+                .Include(oi => oi.Product)
+                .ThenInclude(p => p!.Seller)
                 .Where(oi => oi.OrderId == orderId)
                 .OrderBy(oi => oi.Id)
                 .ToListAsync();
+
             OrderItemsGrid.ItemsSource = _orderItems;
-            OrderItemsTitleText.Text = $"Позиции заказа: #{orderId}";
+
+            var selectedOrder = _orders.FirstOrDefault(o => o.Id == orderId);
+            if (selectedOrder == null)
+            {
+                OrderItemsTitleText.Text = $"Позиции заказа: #{orderId}";
+                return;
+            }
+
+            OrderItemsTitleText.Text =
+                $"Заказ {selectedOrder.OrderNumber}: {selectedOrder.ProductsCount} шт., " +
+                $"{selectedOrder.PositionsCount} позиций, клиент: {selectedOrder.CustomerName}, " +
+                $"ответственный: {selectedOrder.ResponsibleSellerName}";
         }
 
         private async void Refresh_Click(object sender, RoutedEventArgs e)
         {
             await LoadOrdersAsync();
+            if (_selectedOrderId.HasValue)
+            {
+                await LoadOrderItemsAsync(_selectedOrderId.Value);
+            }
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -59,9 +95,11 @@ namespace AdminPanelElectroShop.Views
             }
 
             OrdersGrid.ItemsSource = _orders
-                .Where(o => o.OrderNumber.ToLowerInvariant().Contains(query) ||
-                            o.Status!.ToLowerInvariant().Contains(query) ||
-                            o.PaymentStatus!.ToLowerInvariant().Contains(query))
+                .Where(o => o.OrderNumber.ToLowerInvariant().Contains(query)
+                            || (o.Status ?? string.Empty).ToLowerInvariant().Contains(query)
+                            || (o.PaymentStatus ?? string.Empty).ToLowerInvariant().Contains(query)
+                            || o.CustomerName.ToLowerInvariant().Contains(query)
+                            || o.ResponsibleSellerName.ToLowerInvariant().Contains(query))
                 .ToList();
         }
 
@@ -71,6 +109,7 @@ namespace AdminPanelElectroShop.Views
             OrderNumberBox.Text = $"ORD-{DateTime.Now:yyyyMMddHHmmss}";
             UserIdBox.Text = string.Empty;
             TotalAmountBox.Text = string.Empty;
+            ResponsibleSellerCombo.SelectedIndex = -1;
             StatusBox.SelectedIndex = 0;
             PaymentStatusBox.SelectedIndex = 0;
             EditPanel.Visibility = Visibility.Visible;
@@ -87,12 +126,13 @@ namespace AdminPanelElectroShop.Views
             OrderNumberBox.Text = order.OrderNumber;
             UserIdBox.Text = order.UserId.ToString();
             TotalAmountBox.Text = order.TotalAmount.ToString();
+            ResponsibleSellerCombo.SelectedValue = order.ResponsibleSellerId;
             StatusBox.SelectedItem = StatusBox.Items
                 .OfType<ComboBoxItem>()
-                .FirstOrDefault(i => (i.Content?.ToString() ?? "") == order.Status) ?? StatusBox.Items[0];
+                .FirstOrDefault(i => (i.Content?.ToString() ?? string.Empty) == order.Status) ?? StatusBox.Items[0];
             PaymentStatusBox.SelectedItem = PaymentStatusBox.Items
                 .OfType<ComboBoxItem>()
-                .FirstOrDefault(i => (i.Content?.ToString() ?? "") == order.PaymentStatus) ?? PaymentStatusBox.Items[0];
+                .FirstOrDefault(i => (i.Content?.ToString() ?? string.Empty) == order.PaymentStatus) ?? PaymentStatusBox.Items[0];
             EditPanel.Visibility = Visibility.Visible;
         }
 
@@ -106,6 +146,7 @@ namespace AdminPanelElectroShop.Views
 
             var status = (StatusBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "new";
             var paymentStatus = (PaymentStatusBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "pending";
+            var responsibleSellerId = ResponsibleSellerCombo.SelectedValue is int sellerId ? sellerId : (int?)null;
 
             if (_currentOrder == null)
             {
@@ -114,6 +155,7 @@ namespace AdminPanelElectroShop.Views
                     OrderNumber = OrderNumberBox.Text.Trim(),
                     UserId = userId,
                     TotalAmount = total,
+                    ResponsibleSellerId = responsibleSellerId,
                     Status = status,
                     PaymentStatus = paymentStatus,
                     DeliveryMethod = "pickup",
@@ -128,6 +170,7 @@ namespace AdminPanelElectroShop.Views
                 _currentOrder.OrderNumber = OrderNumberBox.Text.Trim();
                 _currentOrder.UserId = userId;
                 _currentOrder.TotalAmount = total;
+                _currentOrder.ResponsibleSellerId = responsibleSellerId;
                 _currentOrder.Status = status;
                 _currentOrder.PaymentStatus = paymentStatus;
                 _currentOrder.UpdatedAt = DateTime.UtcNow;
@@ -214,17 +257,37 @@ namespace AdminPanelElectroShop.Views
                 return;
             }
 
-            if (!int.TryParse(ItemQuantityBox.Text, out var quantity) || quantity <= 0 ||
-                !decimal.TryParse(ItemPriceBox.Text, out var productPrice))
+            if (!int.TryParse(ItemQuantityBox.Text, out var quantity) || quantity <= 0)
             {
-                MessageBox.Show("Проверьте цену и количество", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Проверьте количество", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             int? productId = null;
+            Product? product = null;
             if (int.TryParse(ItemProductIdBox.Text, out var parsedProductId))
             {
                 productId = parsedProductId;
+                product = await _context.Products
+                    .Include(p => p.Discounts)
+                    .FirstOrDefaultAsync(p => p.Id == parsedProductId);
+            }
+
+            var productName = string.IsNullOrWhiteSpace(ItemProductNameBox.Text)
+                ? product?.Name ?? string.Empty
+                : ItemProductNameBox.Text.Trim();
+
+            var productPrice = product?.FinalPrice ?? 0;
+            if (product == null && !decimal.TryParse(ItemPriceBox.Text, out productPrice))
+            {
+                MessageBox.Show("Проверьте цену", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (productPrice <= 0 || string.IsNullOrWhiteSpace(productName))
+            {
+                MessageBox.Show("Укажите товар или заполните название и цену вручную", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
 
             if (_currentOrderItem == null)
@@ -233,7 +296,7 @@ namespace AdminPanelElectroShop.Views
                 {
                     OrderId = _selectedOrderId.Value,
                     ProductId = productId,
-                    ProductName = ItemProductNameBox.Text.Trim(),
+                    ProductName = productName,
                     ProductPrice = productPrice,
                     Quantity = quantity,
                     TotalPrice = productPrice * quantity
@@ -244,23 +307,14 @@ namespace AdminPanelElectroShop.Views
             else
             {
                 _currentOrderItem.ProductId = productId;
-                _currentOrderItem.ProductName = ItemProductNameBox.Text.Trim();
+                _currentOrderItem.ProductName = productName;
                 _currentOrderItem.ProductPrice = productPrice;
                 _currentOrderItem.Quantity = quantity;
                 _currentOrderItem.TotalPrice = productPrice * quantity;
             }
 
             await _context.SaveChangesAsync();
-
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == _selectedOrderId.Value);
-            if (order != null)
-            {
-                order.TotalAmount = await _context.OrderItems
-                    .Where(oi => oi.OrderId == _selectedOrderId.Value)
-                    .SumAsync(oi => oi.TotalPrice);
-                await _context.SaveChangesAsync();
-            }
-
+            await RecalculateOrderTotalAsync(_selectedOrderId.Value);
             await LoadOrdersAsync();
             await LoadOrderItemsAsync(_selectedOrderId.Value);
             _currentOrderItem = null;
@@ -276,18 +330,24 @@ namespace AdminPanelElectroShop.Views
 
             _context.OrderItems.Remove(item);
             await _context.SaveChangesAsync();
-
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == _selectedOrderId.Value);
-            if (order != null)
-            {
-                order.TotalAmount = await _context.OrderItems
-                    .Where(oi => oi.OrderId == _selectedOrderId.Value)
-                    .SumAsync(oi => oi.TotalPrice);
-                await _context.SaveChangesAsync();
-            }
-
+            await RecalculateOrderTotalAsync(_selectedOrderId.Value);
             await LoadOrdersAsync();
             await LoadOrderItemsAsync(_selectedOrderId.Value);
+        }
+
+        private async Task RecalculateOrderTotalAsync(int orderId)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            if (order == null)
+            {
+                return;
+            }
+
+            order.TotalAmount = await _context.OrderItems
+                .Where(oi => oi.OrderId == orderId)
+                .SumAsync(oi => oi.TotalPrice);
+            order.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
         }
 
         private void CancelOrderItemEdit_Click(object sender, RoutedEventArgs e)

@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="520" d:DesignWidth="1000"
       Title="OrdersManagementPage">
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -17,7 +17,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="🧾 Управление заказами" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
+        <TextBlock Text="Управление заказами" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
 
         <Grid Grid.Row="1" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
@@ -32,42 +32,48 @@
 
         <Border x:Name="EditPanel" Grid.Row="2" Visibility="Collapsed" Background="#F8F9FA"
                 BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
-            <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="OrderNumberBox" Width="150" Margin="0,0,8,0" Padding="8" ToolTip="Номер заказа"/>
-                <TextBox x:Name="UserIdBox" Width="90" Margin="0,0,8,0" Padding="8" ToolTip="ID пользователя"/>
-                <TextBox x:Name="TotalAmountBox" Width="110" Margin="0,0,8,0" Padding="8" ToolTip="Сумма"/>
-                <ComboBox x:Name="StatusBox" Width="110" Margin="0,0,8,0">
+            <WrapPanel>
+                <TextBox x:Name="OrderNumberBox" Width="150" Margin="0,0,8,8" Padding="8" ToolTip="Номер заказа"/>
+                <TextBox x:Name="UserIdBox" Width="90" Margin="0,0,8,8" Padding="8" ToolTip="ID пользователя"/>
+                <TextBox x:Name="TotalAmountBox" Width="110" Margin="0,0,8,8" Padding="8" ToolTip="Сумма"/>
+                <ComboBox x:Name="ResponsibleSellerCombo" Width="180" Margin="0,0,8,8"
+                          DisplayMemberPath="FullName" SelectedValuePath="Id" ToolTip="Ответственный продавец"/>
+                <ComboBox x:Name="StatusBox" Width="110" Margin="0,0,8,8">
                     <ComboBoxItem Content="new"/>
                     <ComboBoxItem Content="processing"/>
                     <ComboBoxItem Content="completed"/>
                     <ComboBoxItem Content="cancelled"/>
                 </ComboBox>
-                <ComboBox x:Name="PaymentStatusBox" Width="110" Margin="0,0,8,0">
+                <ComboBox x:Name="PaymentStatusBox" Width="110" Margin="0,0,8,8">
                     <ComboBoxItem Content="pending"/>
                     <ComboBoxItem Content="paid"/>
                     <ComboBoxItem Content="failed"/>
                 </ComboBox>
-                <Button Content="Сохранить" Width="90" Margin="0,0,8,0" Click="SaveOrder_Click" Background="#28A745" Foreground="White"/>
-                <Button Content="Отмена" Width="90" Click="CancelEdit_Click"/>
-            </StackPanel>
+                <Button Content="Сохранить" Width="90" Margin="0,0,8,8" Click="SaveOrder_Click" Background="#28A745" Foreground="White"/>
+                <Button Content="Отмена" Width="90" Margin="0,0,8,8" Click="CancelEdit_Click"/>
+            </WrapPanel>
         </Border>
 
         <DataGrid x:Name="OrdersGrid" Grid.Row="3" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
                   SelectionChanged="OrdersGrid_SelectionChanged">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                <DataGridTextColumn Header="Номер" Binding="{Binding OrderNumber}" Width="140"/>
-                <DataGridTextColumn Header="UserID" Binding="{Binding UserId}" Width="70"/>
-                <DataGridTextColumn Header="Сумма" Binding="{Binding TotalAmount}" Width="90"/>
+                <DataGridTextColumn Header="Номер" Binding="{Binding OrderNumber}" Width="130"/>
+                <DataGridTextColumn Header="Клиент" Binding="{Binding CustomerName}" Width="150"/>
+                <DataGridTextColumn Header="Ответственный" Binding="{Binding ResponsibleSellerName}" Width="150"/>
+                <DataGridTextColumn Header="Товаров" Binding="{Binding ProductsCount}" Width="75"/>
+                <DataGridTextColumn Header="Позиций" Binding="{Binding PositionsCount}" Width="75"/>
+                <DataGridTextColumn Header="Сумма" Binding="{Binding TotalAmount, StringFormat={}{0:N0} ₽}" Width="100"/>
                 <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="100"/>
                 <DataGridTextColumn Header="Оплата" Binding="{Binding PaymentStatus}" Width="100"/>
+                <DataGridTextColumn Header="Доставка" Binding="{Binding DeliveryInfo}" Width="160"/>
                 <DataGridTextColumn Header="Дата" Binding="{Binding CreatedAt, StringFormat='dd.MM.yyyy HH:mm'}" Width="140"/>
-                <DataGridTemplateColumn Header="Действия" Width="140">
+                <DataGridTemplateColumn Header="Действия" Width="110">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="✏️" Width="35" Margin="0,0,5,0" Click="EditOrder_Click" Background="#1F6FEB" Foreground="White"/>
-                                <Button Content="🗑️" Width="35" Click="DeleteOrder_Click" Background="#DC3545" Foreground="White"/>
+                                <Button Content="✏" Width="35" Margin="0,0,5,0" Click="EditOrder_Click" Background="#1F6FEB" Foreground="White"/>
+                                <Button Content="🗑" Width="35" Click="DeleteOrder_Click" Background="#DC3545" Foreground="White"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -75,19 +81,23 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <TextBlock Grid.Row="4" x:Name="OrderItemsTitleText" Text="Позиции заказа: не выбран"
-                   FontSize="16" FontWeight="Bold" Margin="0,12,0,8"/>
+        <DockPanel Grid.Row="4" Margin="0,12,0,8">
+            <TextBlock x:Name="OrderItemsTitleText" Text="Позиции заказа: не выбран"
+                       FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+            <Button Content="+ Позиция" Width="100" HorizontalAlignment="Right" DockPanel.Dock="Right"
+                    Click="AddOrderItem_Click" Background="#28A745" Foreground="White"/>
+        </DockPanel>
 
         <Border Grid.Row="5" x:Name="OrderItemEditPanel" Visibility="Collapsed" Background="#F8F9FA"
                 BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,8">
-            <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="ItemProductIdBox" Width="90" Margin="0,0,8,0" Padding="8" ToolTip="ID товара"/>
-                <TextBox x:Name="ItemProductNameBox" Width="180" Margin="0,0,8,0" Padding="8" ToolTip="Название"/>
-                <TextBox x:Name="ItemPriceBox" Width="100" Margin="0,0,8,0" Padding="8" ToolTip="Цена"/>
-                <TextBox x:Name="ItemQuantityBox" Width="80" Margin="0,0,8,0" Padding="8" ToolTip="Кол-во"/>
-                <Button Content="Сохранить" Width="90" Margin="0,0,8,0" Click="SaveOrderItem_Click" Background="#28A745" Foreground="White"/>
-                <Button Content="Отмена" Width="90" Click="CancelOrderItemEdit_Click"/>
-            </StackPanel>
+            <WrapPanel>
+                <TextBox x:Name="ItemProductIdBox" Width="90" Margin="0,0,8,8" Padding="8" ToolTip="ID товара"/>
+                <TextBox x:Name="ItemProductNameBox" Width="180" Margin="0,0,8,8" Padding="8" ToolTip="Название"/>
+                <TextBox x:Name="ItemPriceBox" Width="100" Margin="0,0,8,8" Padding="8" ToolTip="Цена"/>
+                <TextBox x:Name="ItemQuantityBox" Width="80" Margin="0,0,8,8" Padding="8" ToolTip="Кол-во"/>
+                <Button Content="Сохранить" Width="90" Margin="0,0,8,8" Click="SaveOrderItem_Click" Background="#28A745" Foreground="White"/>
+                <Button Content="Отмена" Width="90" Margin="0,0,8,8" Click="CancelOrderItemEdit_Click"/>
+            </WrapPanel>
         </Border>
 
         <DataGrid x:Name="OrderItemsGrid" Grid.Row="6" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
@@ -95,17 +105,16 @@
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                 <DataGridTextColumn Header="Товар ID" Binding="{Binding ProductId}" Width="80"/>
                 <DataGridTextColumn Header="Название" Binding="{Binding ProductName}" Width="220"/>
-                <DataGridTextColumn Header="Цена" Binding="{Binding ProductPrice}" Width="90"/>
+                <DataGridTextColumn Header="Продавец" Binding="{Binding Product.SellerName}" Width="150"/>
+                <DataGridTextColumn Header="Цена" Binding="{Binding ProductPrice, StringFormat={}{0:N0} ₽}" Width="100"/>
                 <DataGridTextColumn Header="Кол-во" Binding="{Binding Quantity}" Width="80"/>
-                <DataGridTextColumn Header="Сумма" Binding="{Binding TotalPrice}" Width="90"/>
-                <DataGridTemplateColumn Header="Действия" Width="170">
+                <DataGridTextColumn Header="Сумма" Binding="{Binding TotalPrice, StringFormat={}{0:N0} ₽}" Width="100"/>
+                <DataGridTemplateColumn Header="Действия" Width="110">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="✏️" Width="35" Margin="0,0,5,0" Click="EditOrderItem_Click" Background="#1F6FEB" Foreground="White"/>
-                                <Button Content="🗑️" Width="35" Margin="0,0,5,0" Click="DeleteOrderItem_Click" Background="#DC3545" Foreground="White"/>
-                                <Button Content="+"
-                                        Width="35" Click="AddOrderItem_Click" Background="#28A745" Foreground="White"/>
+                                <Button Content="✏" Width="35" Margin="0,0,5,0" Click="EditOrderItem_Click" Background="#1F6FEB" Foreground="White"/>
+                                <Button Content="🗑" Width="35" Click="DeleteOrderItem_Click" Background="#DC3545" Foreground="White"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

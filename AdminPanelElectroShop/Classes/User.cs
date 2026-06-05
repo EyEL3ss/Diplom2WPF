@@ -30,6 +30,8 @@ namespace AdminPanelElectroShop.Classes
         public virtual ICollection<WishlistItem> WishlistItems { get; set; } = new List<WishlistItem>();
         public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
         public virtual ICollection<Notifications> Notifications { get; set; } = new List<Notifications>();
+        public virtual ICollection<Product> SellerProducts { get; set; } = new List<Product>();
+        public virtual ICollection<Order> ResponsibleOrders { get; set; } = new List<Order>();
 
         public virtual ICollection<PromoCode> PromoCodes { get; set; } = new List<PromoCode>();
     }

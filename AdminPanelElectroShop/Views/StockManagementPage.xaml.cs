@@ -41,7 +41,10 @@ namespace AdminPanelElectroShop.Views
             try
             {
                 _isLoadingProducts = true;
+                await _context.EnsureAdminPanelSchemaAsync();
                 _allProducts = await _context.Products
+                    .Include(p => p.Discounts)
+                    .Include(p => p.Seller)
                     .OrderBy(p => p.StockQuantity)
                     .ToListAsync();
                 ProductsGrid.ItemsSource = _allProducts;
@@ -65,7 +68,7 @@ namespace AdminPanelElectroShop.Views
             {
                 product.IsHit = true;
                 product.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
             }
             finally
             {
@@ -103,6 +106,8 @@ namespace AdminPanelElectroShop.Views
             if (product == null) return;
 
             QuantityBox.Text = product.StockQuantity.ToString();
+            ReceivedDatePicker.SelectedDate = product.ReceivedAt ?? DateTime.Today;
+            NomenclatureBox.Text = product.Nomenclature ?? string.Empty;
             CurrentProduct = product;
             EditPanel.Visibility = Visibility.Visible;
         }
@@ -129,6 +134,8 @@ namespace AdminPanelElectroShop.Views
             {
                 CurrentProduct.StockQuantity = newQuantity;
                 CurrentProduct.InStock = newQuantity > 0;
+                CurrentProduct.ReceivedAt = ReceivedDatePicker.SelectedDate;
+                CurrentProduct.Nomenclature = string.IsNullOrWhiteSpace(NomenclatureBox.Text) ? null : NomenclatureBox.Text.Trim();
                 CurrentProduct.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
             }

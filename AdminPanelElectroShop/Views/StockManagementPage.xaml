@@ -41,6 +41,10 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Новое количество:" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <TextBox x:Name="QuantityBox" Width="100" Margin="0,0,10,0" Padding="8"/>
+                    <TextBlock Text="Дата поступления:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <DatePicker x:Name="ReceivedDatePicker" Width="140" Margin="0,0,10,0"/>
+                    <TextBlock Text="Номенклатура:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBox x:Name="NomenclatureBox" Width="220" Margin="0,0,10,0" Padding="8"/>
                     <Button Content="Сохранить" Width="80" Margin="0,0,10,0" 
                             Click="SaveStock_Click" Background="#28A745" Foreground="White"/>
                     <Button Content="Отмена" Width="80" Click="CancelEdit_Click"/>
@@ -57,7 +61,10 @@
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                 <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="250"/>
                 <DataGridTextColumn Header="Бренд" Binding="{Binding Brand}" Width="120"/>
+                <DataGridTextColumn Header="Продавец" Binding="{Binding SellerName}" Width="150"/>
                 <DataGridTextColumn Header="В наличии" Binding="{Binding StockQuantity}" Width="100"/>
+                <DataGridTextColumn Header="Дата поступления" Binding="{Binding ReceivedAtText}" Width="130"/>
+                <DataGridTextColumn Header="Номенклатура" Binding="{Binding Nomenclature}" Width="220"/>
                 <DataGridTemplateColumn Header="Статус" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

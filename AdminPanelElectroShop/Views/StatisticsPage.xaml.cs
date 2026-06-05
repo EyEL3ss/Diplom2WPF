@@ -71,7 +71,7 @@ namespace AdminPanelElectroShop.Views
     public class TopProduct
     {
         public int Rank { get; set; }
-        public string ProductName { get; set; }
+        public string ProductName { get; set; } = string.Empty;
         public int TotalSold { get; set; }
         public decimal Revenue { get; set; }
     }

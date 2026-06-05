@@ -31,9 +31,6 @@ namespace AdminPanelElectroShop
 
             ServiceProvider = services.BuildServiceProvider();
 
-            var loginWindow = new LoginWindow();
-            loginWindow.Show();
-
             base.OnStartup(e);
         }
     }

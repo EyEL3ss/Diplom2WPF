@@ -67,9 +67,6 @@
                     <Button Content="📦 Склад" 
                             Style="{StaticResource MenuButtonStyle}"
                             Click="Stock_Click"/>
-                    <Button Content="🗄️ SQL-консоль" 
-                            Style="{StaticResource MenuButtonStyle}"
-                            Click="DatabaseConsole_Click"/>
                     <Button Content="Добавить новый товар" 
         Style="{StaticResource MenuButtonStyle}"
         Click="AddPage_Button"/>
