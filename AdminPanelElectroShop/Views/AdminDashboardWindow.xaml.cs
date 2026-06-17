@@ -36,7 +36,7 @@ namespace AdminPanelElectroShop.Views
 
         private void Users_Click(object sender, RoutedEventArgs e)
             => ContentFrame.Navigate(new UsersManagementPage());
-
+    
         private void Moderation_Click(object sender, RoutedEventArgs e)
             => ContentFrame.Navigate(new ProductsModerationPage());
 
@@ -51,6 +51,9 @@ namespace AdminPanelElectroShop.Views
 
         private void Orders_Click(object sender, RoutedEventArgs e) 
             => ContentFrame.Navigate(new OrdersManagementPage());
+
+        private void DatabaseConsole_Click(object sender, RoutedEventArgs e)
+            => ContentFrame.Navigate(new DatabaseConsolePage());
 
         private void LogoutButton_Click(object sender, RoutedEventArgs e)
         {

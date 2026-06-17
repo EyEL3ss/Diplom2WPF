@@ -57,26 +57,7 @@ namespace AdminPanelElectroShop.Views
         }
         private async void HitCheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            if (_isLoadingProducts) return;
 
-            var checkBox = sender as CheckBox;
-            var product = checkBox?.DataContext as Product;
-            if (product == null) return;
-
-            await _dbLock.WaitAsync();
-            try
-            {
-                product.IsHit = true;
-                product.UpdatedAt = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
-            }
-            finally
-            {
-                _dbLock.Release();
-            }
-
-            MessageBox.Show($"Товар \"{product.Name}\" добавлен в хиты продаж", "Успешно",
-                MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async void HitCheckBox_Unchecked(object sender, RoutedEventArgs e)

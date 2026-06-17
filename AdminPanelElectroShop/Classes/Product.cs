@@ -42,6 +42,9 @@ namespace AdminPanelElectroShop.Classes
             ?.Discount;
 
         [NotMapped]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [NotMapped]
         public bool HasActiveDiscount => ActiveDiscount != null;
 
         [NotMapped]

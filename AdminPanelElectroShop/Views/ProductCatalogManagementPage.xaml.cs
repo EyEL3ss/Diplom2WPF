@@ -128,6 +128,17 @@ namespace AdminPanelElectroShop.Views
                 return;
             }
 
+            var orderItemsCount = await _context.OrderItems.CountAsync(item => item.ProductId == product.Id);
+            if (orderItemsCount > 0)
+            {
+                MessageBox.Show(
+                    $"Товар \"{product.Name}\" нельзя удалить, потому что он находится в заказах. Количество позиций в заказах: {orderItemsCount}.",
+                    "Удаление запрещено",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             var result = MessageBox.Show("Удалить товар?", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result != MessageBoxResult.Yes)
             {

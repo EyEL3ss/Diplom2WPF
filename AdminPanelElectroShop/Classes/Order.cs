@@ -34,9 +34,20 @@ namespace AdminPanelElectroShop.Classes
         public int PositionsCount => Items.Count;
 
         [NotMapped]
-        public string DeliveryInfo => DeliveryMethod == "courier"
-            ? DeliveryAddress ?? "Курьерская доставка"
-            : "Самовывоз";
+        public string DeliveryInfo
+        {
+            get
+            {
+                var method = DeliveryMethod == "courier" ? "Курьер" : "Самовывоз";
+                var address = DeliveryMethod == "courier" && !string.IsNullOrWhiteSpace(DeliveryAddress)
+                    ? $", {DeliveryAddress}"
+                    : string.Empty;
+                var date = DeliveryDate.HasValue ? $", {DeliveryDate:dd.MM.yyyy}" : string.Empty;
+                var time = string.IsNullOrWhiteSpace(DeliveryTimeSlot) ? string.Empty : $", {DeliveryTimeSlot}";
+
+                return $"{method}{address}{date}{time}";
+            }
+        }
 
         public virtual User? User { get; set; }
         public virtual User? ResponsibleSeller { get; set; }
